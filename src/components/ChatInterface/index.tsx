@@ -5,13 +5,14 @@ import type { PatientSession } from '@/types';
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { MessageBubble } from '@/components/MessageBubble';
 import { TextInput } from '@/components/TextInput';
+import { VoiceButton } from '@/components/VoiceButton';
 
 interface ChatInterfaceProps {
   session: PatientSession;
 }
 
 export function ChatInterface({ session }: ChatInterfaceProps) {
-  const { messages, isLoading, sendMessage } = useChatHistory();
+  const { messages, isLoading, sendMessage, sendVoice } = useChatHistory();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,6 +21,10 @@ export function ChatInterface({ session }: ChatInterfaceProps) {
 
   const handleSend = (text: string) => {
     sendMessage(text, session);
+  };
+
+  const handleVoiceFile = (file: File) => {
+    sendVoice(file, session);
   };
 
   return (
@@ -60,8 +65,11 @@ export function ChatInterface({ session }: ChatInterfaceProps) {
       </div>
 
       {/* Input area */}
-      <div className="flex-shrink-0">
-        <TextInput onSend={handleSend} disabled={isLoading} />
+      <div className="flex-shrink-0 flex items-end gap-2 px-2 py-2 bg-white border-t border-gray-200">
+        <div className="flex-1">
+          <TextInput onSend={handleSend} disabled={isLoading} />
+        </div>
+        <VoiceButton onVoiceFile={handleVoiceFile} disabled={isLoading} />
       </div>
     </div>
   );

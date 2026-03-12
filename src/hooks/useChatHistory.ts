@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Message, PatientSession } from '@/types';
-import { sendTextMessage } from '@/services/api';
+import { sendTextMessage, sendVoiceMessage } from '@/services/api';
 
 export function useChatHistory() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,5 +44,40 @@ export function useChatHistory() {
     }
   };
 
-  return { messages, isLoading, sendMessage, addMessage };
+  const sendVoice = async (wavFile: File, session: PatientSession) => {
+    const userMsg: Message = {
+      role: 'user',
+      content: '[Mensagem de voz]',
+      timestamp: Date.now(),
+      type: 'voice',
+    };
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
+    setIsLoading(true);
+
+    try {
+      const responseText = await sendVoiceMessage(wavFile, updatedMessages, session);
+      const assistantMsg: Message = {
+        role: 'assistant',
+        content: responseText,
+        timestamp: Date.now(),
+        type: 'text',
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Não foi possível processar sua mensagem de voz. Tente novamente.',
+          timestamp: Date.now(),
+          type: 'text',
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { messages, isLoading, sendMessage, sendVoice, addMessage };
 }
