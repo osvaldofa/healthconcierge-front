@@ -43,10 +43,13 @@ export function useVoiceRecorder() {
       recorder.onstop = async () => {
         try {
           const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+          console.log('[useVoiceRecorder] blob size:', blob.size, 'type:', blob.type);
           const wavFile = await convertToWav(blob);
+          console.log('[useVoiceRecorder] wav size:', wavFile.size);
           recorder.stream.getTracks().forEach((t) => t.stop());
           resolve(wavFile);
         } catch (err) {
+          console.error('[useVoiceRecorder] conversão falhou:', err);
           reject(err);
         }
       };

@@ -56,7 +56,7 @@ export function useChatHistory() {
     setIsLoading(true);
 
     try {
-      const responseText = await sendVoiceMessage(wavFile, updatedMessages, session);
+      const responseText = await sendVoiceMessage(wavFile, messages, session);
       const assistantMsg: Message = {
         role: 'assistant',
         content: responseText,
@@ -64,12 +64,14 @@ export function useChatHistory() {
         type: 'text',
       };
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch {
+    } catch (err) {
+      console.error('[sendVoice] erro:', err);
+      const detail = err instanceof Error ? ` (${err.message})` : '';
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: 'Não foi possível processar sua mensagem de voz. Tente novamente.',
+          content: `Não foi possível processar sua mensagem de voz. Tente novamente.${detail}`,
           timestamp: Date.now(),
           type: 'text',
         },

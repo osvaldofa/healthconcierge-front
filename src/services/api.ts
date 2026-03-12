@@ -44,11 +44,14 @@ export async function sendVoiceMessage(
 ): Promise<string> {
   const formData = new FormData();
   formData.append('file', wavFile, 'audio.wav');
-  formData.append('Prompt', '');
-  formData.append(
-    'JsonHistory',
-    JSON.stringify(history.map((m) => ({ role: m.role, content: m.content })))
-  );
+  formData.append('Prompt', 'audio');
+  const textHistory = history.filter((m) => m.type === 'text');
+  if (textHistory.length > 0) {
+    formData.append(
+      'JsonHistory',
+      JSON.stringify(textHistory.map((m) => ({ role: m.role, content: m.content })))
+    );
+  }
   formData.append('PatientId', session.patientId ?? '');
   formData.append('PatientName', session.patientName ?? '');
 
@@ -57,8 +60,11 @@ export async function sendVoiceMessage(
     body: formData,
   });
 
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  // Backend pode retornar string pura ou JSON — tratar ambos
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error('[sendVoiceMessage] HTTP', res.status, body);
+    throw new Error(`API error: ${res.status}${body ? ' — ' + body.slice(0, 120) : ''}`);
+  }
   const text = await res.text();
   try {
     const json = JSON.parse(text) as { resposta?: string };
