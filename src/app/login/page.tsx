@@ -3,22 +3,33 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveSession } from '@/lib/session';
+import { login } from '@/services/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidEmail(email)) {
       setError('Por favor, insira um e-mail válido.');
       return;
     }
-    saveSession({ patientId: email, patientName: email, email });
-    router.push('/chat');
+    setLoading(true);
+    setError('');
+    try {
+      const { id, nome } = await login(email);
+      saveSession({ patientId: id, patientName: nome, email });
+      router.push('/chat');
+    } catch {
+      setError('Não foi possível autenticar. Verifique seu e-mail e tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,10 +60,10 @@ export default function LoginPage() {
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
-            disabled={!email}
+            disabled={!email || loading}
             className="bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white font-semibold rounded-xl py-4 text-xl mt-2 transition-colors"
           >
-            Acessar
+            {loading ? 'Entrando...' : 'Acessar'}
           </button>
         </form>
       </div>

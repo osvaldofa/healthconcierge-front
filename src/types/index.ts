@@ -21,3 +21,12 @@ export interface PatientSession {
   patientName: string;
   email: string;
 }
+
+export interface LoginRequest {
+  Email: string;
+}
+
+export interface LoginResponse {
+  id: string;
+  nome: string;
+}

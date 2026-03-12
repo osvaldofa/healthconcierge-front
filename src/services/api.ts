@@ -1,6 +1,17 @@
-import type { InteractRequest, InteractResponse, Message, PatientSession } from '@/types';
+import type { InteractRequest, InteractResponse, LoginRequest, LoginResponse, Message, PatientSession } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE = '';
+
+export async function login(email: string): Promise<LoginResponse> {
+  const payload: LoginRequest = { Email: email };
+  const res = await fetch(`${API_BASE}/api/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Login falhou: ${res.status}`);
+  return res.json();
+}
 
 export async function sendTextMessage(
   prompt: string,
